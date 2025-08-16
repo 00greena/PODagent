@@ -1,6 +1,6 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
 interface EmailData {
   timeIn: string
@@ -11,6 +11,11 @@ interface EmailData {
 }
 
 export async function sendNotificationEmail(data: EmailData) {
+  if (!resend) {
+    console.warn('Email service not configured. Please set RESEND_API_KEY.')
+    return { success: false, error: 'Email service not configured' }
+  }
+  
   try {
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">

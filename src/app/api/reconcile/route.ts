@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
 
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
-    weekEntries.forEach(entry => {
+    weekEntries.forEach((entry: any) => {
       const date = new Date(entry.createdAt)
       const dayName = dayNames[date.getDay()]
       
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
     const summaryData: any[] = []
 
     Object.entries(dailyData).forEach(([day, entries]) => {
-      const dayHours = entries.reduce((sum, entry) => sum + parseFloat(entry.hours), 0)
+      const dayHours = entries.reduce((sum: number, entry: any) => sum + parseFloat(entry.hours), 0)
       totalHours += dayHours
 
       summaryData.push({
@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
     })
 
     // All entries sheet
-    const allEntriesData = weekEntries.map(entry => ({
+    const allEntriesData = weekEntries.map((entry: any) => ({
       'Date': new Date(entry.createdAt).toLocaleDateString('en-GB'),
       'Day': dayNames[new Date(entry.createdAt).getDay()],
       'Time In': entry.timeIn,

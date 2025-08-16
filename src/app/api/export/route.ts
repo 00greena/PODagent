@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     })
 
     // Prepare data for Excel
-    const excelData = entries.map(entry => ({
+    const excelData = entries.map((entry: any) => ({
       'Date': new Date(entry.createdAt).toLocaleDateString('en-GB'),
       'Time In': entry.timeIn,
       'Time Out': entry.timeOut,
