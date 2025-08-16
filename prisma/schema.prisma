@@ -1,0 +1,26 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model PODEntry {
+  id              String   @id @default(cuid())
+  podImage        String?  @db.Text
+  jobSheetImage   String?  @db.Text
+  timeIn          String
+  timeOut         String
+  deliveryAddress String?
+  referenceNumber String?
+  extractedData   Json?
+  weekNumber      Int
+  year            Int
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([weekNumber, year])
+  @@index([createdAt])
+}
