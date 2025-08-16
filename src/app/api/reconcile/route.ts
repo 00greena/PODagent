@@ -44,6 +44,8 @@ export async function GET(request: NextRequest) {
           hours: hours.toFixed(2),
           deliveryAddress: entry.deliveryAddress || '',
           referenceNumber: entry.referenceNumber || '',
+          podImage: entry.podImageUrl || '',
+          jobSheetImage: entry.jobSheetImageUrl || '',
         })
       }
     })
@@ -98,6 +100,8 @@ export async function GET(request: NextRequest) {
       'Hours': calculateHours(entry.timeIn, entry.timeOut).toFixed(2),
       'Delivery Address': entry.deliveryAddress || '',
       'Reference Number': entry.referenceNumber || '',
+      'POD Image': entry.podImageUrl || '',
+      'Job Sheet Image': entry.jobSheetImageUrl || '',
     }))
 
     const allEntriesSheet = XLSX.utils.json_to_sheet(allEntriesData)

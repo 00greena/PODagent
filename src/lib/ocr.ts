@@ -37,6 +37,40 @@ export async function extractTextFromImage(imageBase64: string): Promise<{
   }
 }
 
+export async function extractTextFromBlobUrl(blobUrl: string): Promise<{
+  text: string
+  deliveryAddress?: string
+  referenceNumber?: string
+}> {
+  try {
+    // Create Tesseract worker
+    const worker = await createWorker('eng')
+    
+    // Perform OCR directly from URL
+    const { data: { text } } = await worker.recognize(blobUrl)
+    
+    // Terminate worker
+    await worker.terminate()
+    
+    // Extract key information using regex patterns
+    const deliveryAddress = extractAddress(text)
+    const referenceNumber = extractReferenceNumber(text)
+    
+    return {
+      text,
+      deliveryAddress,
+      referenceNumber
+    }
+  } catch (error) {
+    console.error('OCR error:', error)
+    return {
+      text: '',
+      deliveryAddress: undefined,
+      referenceNumber: undefined
+    }
+  }
+}
+
 function extractAddress(text: string): string | undefined {
   // Common patterns for addresses
   const addressPatterns = [

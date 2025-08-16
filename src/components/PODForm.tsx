@@ -71,6 +71,8 @@ export default function PODForm() {
         body: JSON.stringify({
           podImage: podBase64,
           jobSheetImage: jobSheetBase64,
+          podFileName: podFile.name,
+          jobSheetFileName: jobSheetFile.name,
           timeIn,
           timeOut,
         }),

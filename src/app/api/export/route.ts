@@ -18,6 +18,8 @@ export async function GET(request: NextRequest) {
       'Time Out': entry.timeOut,
       'Delivery Address': entry.deliveryAddress || '',
       'Reference Number': entry.referenceNumber || '',
+      'POD Image': entry.podImageUrl || '',
+      'Job Sheet Image': entry.jobSheetImageUrl || '',
       'Week Number': entry.weekNumber,
       'Year': entry.year,
     }))

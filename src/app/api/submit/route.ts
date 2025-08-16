@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { extractTextFromImage } from '@/lib/ocr'
+import { extractTextFromImage, extractTextFromBlobUrl } from '@/lib/ocr'
 import { sendNotificationEmail } from '@/lib/email'
 import { getWeekNumber } from '@/lib/utils'
+import { uploadBase64ToBlob, generateUniqueFilename } from '@/lib/blob'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { podImage, jobSheetImage, timeIn, timeOut } = body
+    const { podImage, jobSheetImage, timeIn, timeOut, podFileName, jobSheetFileName } = body
 
     if (!podImage || !jobSheetImage || !timeIn || !timeOut) {
       return NextResponse.json(
@@ -16,9 +17,19 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Extract text from images using OCR
-    const podOCR = await extractTextFromImage(podImage)
-    const jobSheetOCR = await extractTextFromImage(jobSheetImage)
+    // Generate unique filenames
+    const podBlobFilename = generateUniqueFilename(podFileName || 'pod.jpg', 'pod-')
+    const jobSheetBlobFilename = generateUniqueFilename(jobSheetFileName || 'jobsheet.jpg', 'jobsheet-')
+
+    // Upload images to Vercel Blob
+    const podImageUrl = await uploadBase64ToBlob(podImage, podBlobFilename, 'image/jpeg')
+    const jobSheetImageUrl = await uploadBase64ToBlob(jobSheetImage, jobSheetBlobFilename, 'image/jpeg')
+
+    // Extract text from images using OCR (directly from blob URLs for better performance)
+    const [podOCR, jobSheetOCR] = await Promise.all([
+      extractTextFromBlobUrl(podImageUrl),
+      extractTextFromBlobUrl(jobSheetImageUrl)
+    ])
 
     // Combine extracted data
     const deliveryAddress = podOCR.deliveryAddress || jobSheetOCR.deliveryAddress
@@ -28,11 +39,13 @@ export async function POST(request: NextRequest) {
     const weekNumber = getWeekNumber(now)
     const year = now.getFullYear()
 
-    // Save to database
+    // Save to database with blob URLs
     const entry = await prisma.pODEntry.create({
       data: {
-        podImage,
-        jobSheetImage,
+        podImageUrl,
+        jobSheetImageUrl,
+        podFileName: podFileName || 'pod.jpg',
+        jobSheetFileName: jobSheetFileName || 'jobsheet.jpg',
         timeIn,
         timeOut,
         deliveryAddress,
@@ -40,6 +53,8 @@ export async function POST(request: NextRequest) {
         extractedData: {
           podText: podOCR.text,
           jobSheetText: jobSheetOCR.text,
+          podImageUrl,
+          jobSheetImageUrl,
         },
         weekNumber,
         year,
@@ -61,6 +76,8 @@ export async function POST(request: NextRequest) {
         id: entry.id,
         deliveryAddress,
         referenceNumber,
+        podImageUrl,
+        jobSheetImageUrl,
       },
     })
   } catch (error) {

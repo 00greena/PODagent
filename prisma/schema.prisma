@@ -9,8 +9,10 @@ datasource db {
 
 model PODEntry {
   id              String   @id @default(cuid())
-  podImage        String?  @db.Text
-  jobSheetImage   String?  @db.Text
+  podImageUrl     String?  // Vercel Blob URL
+  jobSheetImageUrl String? // Vercel Blob URL
+  podFileName     String?  // Original filename
+  jobSheetFileName String? // Original filename
   timeIn          String
   timeOut         String
   deliveryAddress String?
