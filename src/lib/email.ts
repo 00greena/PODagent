@@ -11,8 +11,13 @@ interface EmailData {
 }
 
 export async function sendNotificationEmail(data: EmailData) {
+  // Use Gmail with Nodemailer if Gmail credentials are available
+  if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+    return await sendNotificationEmailNodemailer(data)
+  }
+  
   if (!resend) {
-    console.warn('Email service not configured. Please set RESEND_API_KEY.')
+    console.warn('Email service not configured. Please set RESEND_API_KEY or Gmail credentials.')
     return { success: false, error: 'Email service not configured' }
   }
   
@@ -68,19 +73,17 @@ export async function sendNotificationEmail(data: EmailData) {
 import nodemailer from 'nodemailer'
 
 export async function sendNotificationEmailNodemailer(data: EmailData) {
-  // Create transporter
+  // Create transporter for Gmail
   const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: false,
+    service: 'gmail',
     auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASSWORD,
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_APP_PASSWORD,
     },
   })
 
   const mailOptions = {
-    from: process.env.EMAIL_FROM || 'noreply@yourdomain.com',
+    from: process.env.GMAIL_USER,
     to: process.env.EMAIL_TO || 'admin@veologistics.com',
     subject: `POD Submission - ${data.date}`,
     html: `
